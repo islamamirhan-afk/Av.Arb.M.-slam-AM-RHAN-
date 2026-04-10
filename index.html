@@ -1,0 +1,635 @@
+
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Georgia',serif}
+  .app{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--color-background-tertiary);min-height:600px;padding:0}
+  .header{background:var(--color-background-primary);border-bottom:0.5px solid var(--color-border-tertiary);padding:14px 20px;display:flex;align-items:center;justify-content:space-between}
+  .header-left{display:flex;align-items:center;gap:10px}
+  .logo{width:28px;height:28px;background:var(--color-background-info);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500;color:var(--color-text-info)}
+  .app-title{font-size:15px;font-weight:500;color:var(--color-text-primary)}
+  .header-right{display:flex;align-items:center;gap:8px}
+  .sync-badge{font-size:11px;color:var(--color-text-success);background:var(--color-background-success);padding:3px 10px;border-radius:999px;border:0.5px solid var(--color-border-success)}
+  .google-btn{font-size:12px;padding:5px 12px;border:0.5px solid var(--color-border-secondary);border-radius:6px;cursor:pointer;background:var(--color-background-primary);color:var(--color-text-primary);display:flex;align-items:center;gap:6px}
+  .google-btn:hover{background:var(--color-background-secondary)}
+  .tabs-bar{background:var(--color-background-primary);border-bottom:0.5px solid var(--color-border-tertiary);padding:0 20px;display:flex;gap:2px}
+  .tab{font-size:13px;padding:10px 14px;border:none;background:none;color:var(--color-text-secondary);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-0.5px;white-space:nowrap}
+  .tab.active{color:var(--color-text-primary);border-bottom:2px solid var(--color-text-primary);font-weight:500}
+  .content{padding:16px 20px}
+  .stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:16px}
+  .stat{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 12px;text-align:center}
+  .stat-num{font-size:22px;font-weight:500;color:var(--color-text-primary)}
+  .stat-lbl{font-size:11px;color:var(--color-text-secondary);margin-top:2px}
+  .section-label{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 8px;display:flex;align-items:center;gap:6px}
+  .dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+  .task-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);margin-bottom:6px;overflow:hidden}
+  .task-main{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;cursor:pointer}
+  .task-main:hover{background:var(--color-background-secondary)}
+  .check{width:16px;height:16px;min-width:16px;border:1.5px solid var(--color-border-secondary);border-radius:4px;display:flex;align-items:center;justify-content:center;margin-top:2px;cursor:pointer}
+  .check.done{background:var(--color-background-success);border-color:var(--color-border-success)}
+  .task-body{flex:1;min-width:0}
+  .task-name{font-size:14px;color:var(--color-text-primary);line-height:1.4}
+  .task-meta{font-size:12px;color:var(--color-text-secondary);margin-top:3px;display:flex;gap:10px;flex-wrap:wrap}
+  .task-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;min-width:90px}
+  .badge{font-size:10px;font-weight:500;padding:2px 8px;border-radius:999px;white-space:nowrap}
+  .badge-red{background:var(--color-background-danger);color:var(--color-text-danger)}
+  .badge-amber{background:var(--color-background-warning);color:var(--color-text-warning)}
+  .badge-blue{background:var(--color-background-info);color:var(--color-text-info)}
+  .badge-teal{background:var(--color-background-success);color:var(--color-text-success)}
+  .badge-gray{background:var(--color-background-secondary);color:var(--color-text-secondary)}
+  .deadline-txt{font-size:11px;color:var(--color-text-secondary)}
+  .deadline-bar{height:3px;border-radius:2px;margin-top:2px;width:70px}
+  .task-detail{border-top:0.5px solid var(--color-border-tertiary);padding:10px 12px;background:var(--color-background-secondary);display:none}
+  .task-detail.open{display:block}
+  .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+  .detail-field label{font-size:11px;color:var(--color-text-secondary);display:block;margin-bottom:3px}
+  .detail-field input,.detail-field textarea,.detail-field select{width:100%;border:0.5px solid var(--color-border-secondary);border-radius:6px;padding:6px 10px;font-size:13px;background:var(--color-background-primary);color:var(--color-text-primary)}
+  .detail-field textarea{resize:vertical;min-height:60px}
+  .detail-actions{display:flex;gap:6px;margin-top:8px;justify-content:flex-end}
+  .btn-sm{font-size:12px;padding:5px 12px;border:0.5px solid var(--color-border-secondary);border-radius:6px;cursor:pointer;background:var(--color-background-primary);color:var(--color-text-primary)}
+  .btn-sm:hover{background:var(--color-background-secondary)}
+  .btn-primary{background:var(--color-text-primary);color:var(--color-background-primary);border-color:var(--color-text-primary)}
+  .btn-primary:hover{opacity:.85}
+  .btn-cal{background:var(--color-background-info);color:var(--color-text-info);border-color:var(--color-border-info)}
+  .add-section{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:14px}
+  .add-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .add-grid input,.add-grid select,.add-grid textarea{width:100%;border:0.5px solid var(--color-border-secondary);border-radius:6px;padding:7px 10px;font-size:13px;background:var(--color-background-primary);color:var(--color-text-primary)}
+  .add-grid .full{grid-column:1/-1}
+  .add-footer{margin-top:10px;display:flex;justify-content:flex-end}
+  .week-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+  .week-col{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px}
+  .week-col h4{font-size:11px;font-weight:500;color:var(--color-text-secondary);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}
+  .week-slot{font-size:11px;padding:4px 6px;border-radius:4px;margin-bottom:3px;line-height:1.3;cursor:pointer}
+  .month-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+  .month-day{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:6px;padding:6px;min-height:64px}
+  .month-day.today{border-color:var(--color-border-info);background:var(--color-background-info)}
+  .month-day-num{font-size:12px;font-weight:500;color:var(--color-text-primary);margin-bottom:3px}
+  .month-event{font-size:10px;padding:2px 4px;border-radius:3px;margin-bottom:2px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .month-header{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px}
+  .month-header span{font-size:11px;color:var(--color-text-secondary);text-align:center;padding:4px}
+  .empty-msg{font-size:13px;color:var(--color-text-secondary);padding:8px 0}
+  .cal-nav{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+  .cal-nav button{border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary);padding:4px 10px;border-radius:6px;cursor:pointer;font-size:13px}
+  .cal-nav button:hover{background:var(--color-background-secondary)}
+  .cal-title{font-size:14px;font-weight:500;color:var(--color-text-primary)}
+  .durusma-badge{font-size:10px;background:var(--color-background-warning);color:var(--color-text-warning);padding:2px 6px;border-radius:3px;margin-left:6px}
+  .rule-block{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 14px;margin-bottom:6px;font-size:13px;color:var(--color-text-secondary);line-height:1.6;border-left:3px solid var(--color-border-info)}
+  .rule-block strong{color:var(--color-text-primary);font-weight:500}
+  .panel{display:none}.panel.active{display:block}
+  .tasks-done{opacity:.45}.tasks-done .task-name{text-decoration:line-through}
+  .filter-row{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+  .filter-btn{font-size:12px;padding:4px 12px;border:0.5px solid var(--color-border-secondary);border-radius:999px;cursor:pointer;background:var(--color-background-primary);color:var(--color-text-secondary)}
+  .filter-btn.active{background:var(--color-text-primary);color:var(--color-background-primary);border-color:var(--color-text-primary)}
+  @media(max-width:560px){
+    .stats-row{grid-template-columns:repeat(3,1fr)}
+    .add-grid{grid-template-columns:1fr}
+    .add-grid .full{grid-column:1}
+    .week-grid{grid-template-columns:repeat(3,1fr)}
+    .month-grid,.month-header{grid-template-columns:repeat(7,minmax(0,1fr))}
+    .detail-grid{grid-template-columns:1fr}
+  }
+</style>
+
+<div class="app">
+  <div class="header">
+    <div class="header-left">
+      <div class="logo">AV</div>
+      <span class="app-title">Avukat İş Takip Pro</span>
+    </div>
+    <div class="header-right">
+      <span class="sync-badge" id="sync-status">● Kaydedildi</span>
+      <button class="google-btn" onclick="connectGoogle()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Google Drive
+      </button>
+    </div>
+  </div>
+
+  <div class="tabs-bar">
+    <button class="tab active" onclick="showTab('bugun',this)">Bugün</button>
+    <button class="tab" onclick="showTab('bekleyen',this)">Tüm İşler</button>
+    <button class="tab" onclick="showTab('haftalik',this)">Haftalık</button>
+    <button class="tab" onclick="showTab('aylik',this)">Aylık</button>
+    <button class="tab" onclick="showTab('durusmalar',this)">Duruşmalar</button>
+    <button class="tab" onclick="showTab('kurallar',this)">Protokol</button>
+  </div>
+
+  <div class="content">
+
+    <div id="tab-bugun" class="panel active">
+      <div class="stats-row">
+        <div class="stat"><div class="stat-num" id="s-acil" style="color:var(--color-text-danger)">0</div><div class="stat-lbl">Acil</div></div>
+        <div class="stat"><div class="stat-num" id="s-bugun">0</div><div class="stat-lbl">Bugün</div></div>
+        <div class="stat"><div class="stat-num" id="s-durusma" style="color:var(--color-text-warning)">0</div><div class="stat-lbl">Duruşma</div></div>
+        <div class="stat"><div class="stat-num" id="s-tamam" style="color:var(--color-text-success)">0</div><div class="stat-lbl">Tamam</div></div>
+        <div class="stat"><div class="stat-num" id="s-bekleyen">0</div><div class="stat-lbl">Toplam</div></div>
+      </div>
+
+      <div class="section-label"><span class="dot" style="background:var(--color-text-danger)"></span>Kesin süreli — bugün bitirilmeli</div>
+      <div id="list-urgent"></div>
+
+      <div class="section-label" style="margin-top:14px"><span class="dot" style="background:var(--color-text-warning)"></span>Duruşmalar</div>
+      <div id="list-durusma-today"></div>
+
+      <div class="section-label" style="margin-top:14px"><span class="dot" style="background:var(--color-text-info)"></span>Bugün planlanmış</div>
+      <div id="list-scheduled"></div>
+
+      <div class="section-label" style="margin-top:18px">Yeni görev ekle</div>
+      <div class="add-section">
+        <div class="add-grid">
+          <input type="text" id="n-name" placeholder="Görev adı *">
+          <input type="text" id="n-client" placeholder="Müvekkil adı">
+          <select id="n-type">
+            <option value="tebligat">Resmi Tebligat</option>
+            <option value="sozlesme">Sözleşme / Belge</option>
+            <option value="mail">Mail / Görüş Talebi</option>
+            <option value="gorusme">Müvekkil Görüşmesi</option>
+            <option value="durusma">Duruşma</option>
+          </select>
+          <input type="date" id="n-arrived" placeholder="Geliş tarihi">
+          <input type="date" id="n-deadline" placeholder="Son tarih *">
+          <input type="time" id="n-time" placeholder="Saat (duruşma için)">
+          <input type="text" id="n-court" placeholder="Mahkeme / Esas no (duruşma)">
+          <input type="text" id="n-dtype" placeholder="Duruşma türü (ön inceleme, tahkikat...)">
+          <textarea id="n-notes" class="full" placeholder="Notlar..." rows="2"></textarea>
+        </div>
+        <div class="add-footer">
+          <button class="btn-sm btn-primary" onclick="addTask()">+ Görev Ekle</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-bekleyen" class="panel">
+      <div class="filter-row">
+        <button class="filter-btn active" onclick="setFilter('hepsi',this)">Hepsi</button>
+        <button class="filter-btn" onclick="setFilter('tebligat',this)">Tebligat</button>
+        <button class="filter-btn" onclick="setFilter('sozlesme',this)">Sözleşme</button>
+        <button class="filter-btn" onclick="setFilter('mail',this)">Mail</button>
+        <button class="filter-btn" onclick="setFilter('gorusme',this)">Görüşme</button>
+        <button class="filter-btn" onclick="setFilter('durusma',this)">Duruşma</button>
+      </div>
+      <div id="list-all"></div>
+    </div>
+
+    <div id="tab-haftalik" class="panel">
+      <div style="margin-bottom:12px;font-size:13px;color:var(--color-text-secondary)">Bu haftanın iş dağılımı — son tarihten geriye hesaplanmış</div>
+      <div class="week-grid" id="week-grid"></div>
+      <div style="margin-top:10px;font-size:11px;color:var(--color-text-secondary)">Tebligatlar son 2 gün öncesine · Mail/görüşme 1 gün öncesine · Sözleşmeler son güne</div>
+    </div>
+
+    <div id="tab-aylik" class="panel">
+      <div class="cal-nav">
+        <button onclick="prevMonth()">&#8249;</button>
+        <span class="cal-title" id="cal-title"></span>
+        <button onclick="nextMonth()">&#8250;</button>
+      </div>
+      <div class="month-header">
+        <span>Pzt</span><span>Sal</span><span>Çar</span><span>Per</span><span>Cum</span><span>Cmt</span><span>Paz</span>
+      </div>
+      <div class="month-grid" id="month-grid"></div>
+    </div>
+
+    <div id="tab-durusmalar" class="panel">
+      <div id="list-durusmalar"></div>
+      <div class="section-label" style="margin-top:14px">Yeni duruşma ekle</div>
+      <div class="add-section">
+        <div class="add-grid">
+          <input type="text" id="d-name" placeholder="Dava adı / taraf *">
+          <input type="text" id="d-client" placeholder="Müvekkil">
+          <input type="text" id="d-court" placeholder="Mahkeme adı *">
+          <input type="text" id="d-esasno" placeholder="Esas no">
+          <input type="date" id="d-date" placeholder="Duruşma tarihi *">
+          <input type="time" id="d-time" placeholder="Saat">
+          <input type="text" id="d-salon" placeholder="Salon / yer">
+          <select id="d-dtype">
+            <option value="">Duruşma türü seçin</option>
+            <option>Ön inceleme</option>
+            <option>Tahkikat</option>
+            <option>Sözlü yargılama</option>
+            <option>Karar</option>
+            <option>İstinaf</option>
+            <option>Temyiz</option>
+          </select>
+          <textarea id="d-notes" class="full" placeholder="Notlar, hazırlık gereksinimleri..." rows="2"></textarea>
+        </div>
+        <div class="add-footer">
+          <button class="btn-sm btn-primary" onclick="addDurusma()">+ Duruşma Ekle</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-kurallar" class="panel">
+      <div class="section-label">Günlük çalışma protokolü</div>
+      <div class="rule-block"><strong>08:30 — Sabah taraması (5 dk)</strong><br>Yalnızca o günün kesin süreli işlerini belirle. Başka hiçbir şeye bakma.</div>
+      <div class="rule-block"><strong>09:00–12:00 — Derin çalışma bloğu</strong><br>Yalnızca kırmızı ve tebligat işleri. Telefon sessiz, mail kapalı.</div>
+      <div class="rule-block"><strong>12:00–13:00 — Mail ve mesaj bloğu</strong><br>Gelen tüm mail ve bilgi talepleri bu blokta yanıtlanır.</div>
+      <div class="rule-block"><strong>16:00–17:00 — Planlama bloğu</strong><br>Yeni gelen işlere süre ve öncelik ata. Yarının listesini bu saatte hazırla.</div>
+      <div class="rule-block"><strong>Küçük iş kuralı</strong><br>5 dk altı → anında yap. 5–15 dk → öğle bloğu. 15+ dk → planlama bloğunda yer verilir.</div>
+      <div class="section-label" style="margin-top:14px">Süre kuralları</div>
+      <div class="rule-block"><strong style="color:var(--color-text-danger)">Tebligat:</strong> 7 gün veya 3 hafta — kesin süre. 2 gün öncesinden öneme alınır.</div>
+      <div class="rule-block"><strong style="color:var(--color-text-warning)">Sözleşme / Belge:</strong> Genellikle 3 gün. Acil olmadıkça derin çalışma bloğuna.</div>
+      <div class="rule-block"><strong style="color:var(--color-text-info)">Mail / Görüş talebi:</strong> 2 gün içinde yanıt. Öğle bloğuna dahil.</div>
+      <div class="rule-block"><strong style="color:var(--color-text-success)">Müvekkil görüşmesi:</strong> Randevu bazlı. Bir gün öncesinden hazırlık.</div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const KEY='avukat_pro_v2';
+const todayD=new Date(); todayD.setHours(0,0,0,0);
+let calYear=todayD.getFullYear(), calMonth=todayD.getMonth();
+let activeFilter='hepsi';
+let openTaskId=null;
+
+function save(d){try{localStorage.setItem(KEY,JSON.stringify(d));}catch(e){}}
+function load(){
+  try{const d=localStorage.getItem(KEY);if(d)return JSON.parse(d);}catch(e){}
+  const off=n=>{const d=new Date(todayD);d.setDate(d.getDate()+n);return d.toISOString().split('T')[0];};
+  return {
+    tasks:[
+      {id:1,name:'Haciz ihbarnamesi — Müvekkil A',type:'tebligat',client:'Müvekkil A',arrived:off(-2),deadline:off(2),time:'',court:'',dtype:'',notes:'İcra dosyasına ek belgeler gerekiyor',result:'',done:false},
+      {id:2,name:'Kira sözleşmesi incelemesi',type:'sozlesme',client:'Müvekkil C',arrived:off(-1),deadline:off(3),time:'',court:'',dtype:'',notes:'',result:'',done:false},
+      {id:3,name:'Sigorta görüş talebi',type:'mail',client:'Axa Sigorta',arrived:off(0),deadline:off(1),time:'',court:'',dtype:'',notes:'Polis numarası: 2024/887',result:'',done:false},
+      {id:4,name:'İlk görüşme',type:'gorusme',client:'Müvekkil B',arrived:off(0),deadline:off(0),time:'14:30',court:'',dtype:'',notes:'Yeni iş görüşmesi',result:'',done:false},
+      {id:5,name:'Tebligat — icra dosyası',type:'tebligat',client:'Müvekkil D',arrived:off(-5),deadline:off(5),time:'',court:'',dtype:'',notes:'',result:'',done:false},
+    ],
+    hearings:[
+      {id:101,name:'Ayşe Kaya - Boşanma',client:'Ayşe Kaya',court:'2. Aile Mahkemesi',esasno:'2024/1234',date:off(1),time:'09:30',salon:'Salon 3',dtype:'Tahkikat',notes:'Tanık listesi hazırla',result:'',done:false},
+      {id:102,name:'ABC Ltd. - Ticaret',client:'ABC Ltd.',court:'3. Asliye Ticaret',esasno:'2024/5678',date:off(7),time:'11:00',salon:'Salon 7',dtype:'Sözlü yargılama',notes:'',result:'',done:false},
+    ]
+  };
+}
+
+let data=load();
+let nextId=Math.max(...data.tasks.map(t=>t.id),...data.hearings.map(h=>h.id),0)+1;
+
+function daysLeft(d){const dd=new Date(d);dd.setHours(0,0,0,0);return Math.ceil((dd-todayD)/86400000);}
+function fmtDate(d){return new Date(d).toLocaleDateString('tr-TR',{day:'numeric',month:'short'});}
+function typeLabel(t){return {tebligat:'Tebligat',sozlesme:'Sözleşme',mail:'Mail',gorusme:'Görüşme',durusma:'Duruşma'}[t]||t;}
+function badgeCls(t){return {tebligat:'badge-red',sozlesme:'badge-amber',mail:'badge-blue',gorusme:'badge-teal',durusma:'badge-amber'}[t]||'badge-gray';}
+function urgColor(days,type){
+  if(days<0)return 'var(--color-text-danger)';
+  if(type==='tebligat'&&days<=2)return 'var(--color-text-danger)';
+  if(days===0)return 'var(--color-text-danger)';
+  if(days<=3)return 'var(--color-text-warning)';
+  return 'var(--color-text-info)';
+}
+function isUrgent(t){
+  const d=daysLeft(t.deadline);
+  if(d<0)return true;
+  if(t.type==='tebligat'&&d<=2)return true;
+  if(d===0)return true;
+  return false;
+}
+
+function taskHTML(t, compact){
+  const d=daysLeft(t.deadline);
+  const col=urgColor(d,t.type);
+  const lbl=d<0?`${Math.abs(d)} gün geçti`:d===0?'Bugün son':`${d} gün kaldı`;
+  const barW=Math.max(4,Math.min(70,70-d*8));
+  const isOpen=openTaskId===t.id;
+  return `<div class="task-card${t.done?' tasks-done':''}" id="tc-${t.id}">
+    <div class="task-main" onclick="toggleDetail(${t.id})">
+      <div class="check${t.done?' done':''}" onclick="event.stopPropagation();toggleDone(${t.id})">
+        ${t.done?`<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="var(--color-text-success)" stroke-width="2.5"><polyline points="2,5 4,8 8,3"/></svg>`:''}
+      </div>
+      <div class="task-body">
+        <div class="task-name">${t.name}${t.type==='durusma'?`<span class="durusma-badge">Duruşma</span>`:''}</div>
+        <div class="task-meta">
+          ${t.client?`<span>👤 ${t.client}</span>`:''}
+          ${t.arrived?`<span>Geldi: ${fmtDate(t.arrived)}</span>`:''}
+          ${t.court?`<span>📋 ${t.court}</span>`:''}
+          ${t.time?`<span>🕐 ${t.time}</span>`:''}
+        </div>
+      </div>
+      <div class="task-right">
+        <span class="badge ${badgeCls(t.type)}">${typeLabel(t.type)}</span>
+        <span class="deadline-txt" style="color:${t.done?'var(--color-text-secondary)':col}">${lbl}</span>
+        <div class="deadline-bar" style="background:${t.done?'var(--color-border-tertiary)':col};width:${barW}px"></div>
+      </div>
+    </div>
+    <div class="task-detail ${isOpen?'open':''}" id="td-${t.id}">
+      <div class="detail-grid">
+        <div class="detail-field"><label>Müvekkil</label><input value="${t.client||''}" onchange="updateTask(${t.id},'client',this.value)"></div>
+        <div class="detail-field"><label>Geliş tarihi</label><input type="date" value="${t.arrived||''}" onchange="updateTask(${t.id},'arrived',this.value)"></div>
+        <div class="detail-field"><label>Son tarih</label><input type="date" value="${t.deadline||''}" onchange="updateTask(${t.id},'deadline',this.value)"></div>
+        <div class="detail-field"><label>Saat</label><input type="time" value="${t.time||''}" onchange="updateTask(${t.id},'time',this.value)"></div>
+        ${t.type==='durusma'?`
+        <div class="detail-field"><label>Mahkeme / Esas no</label><input value="${t.court||''}" onchange="updateTask(${t.id},'court',this.value)"></div>
+        <div class="detail-field"><label>Duruşma türü</label><input value="${t.dtype||''}" onchange="updateTask(${t.id},'dtype',this.value)"></div>
+        <div class="detail-field full"><label>Duruşma sonucu / karar</label><input value="${t.result||''}" onchange="updateTask(${t.id},'result',this.value)"></div>
+        `:''}
+        <div class="detail-field" style="grid-column:1/-1"><label>Notlar</label><textarea onchange="updateTask(${t.id},'notes',this.value)">${t.notes||''}</textarea></div>
+      </div>
+      <div class="detail-actions">
+        <button class="btn-sm btn-cal" onclick="addToCalendar(${t.id})">📅 Google Takvim'e ekle</button>
+        <button class="btn-sm" style="color:var(--color-text-danger)" onclick="deleteTask(${t.id})">Sil</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function hearingHTML(h){
+  const d=daysLeft(h.date);
+  const lbl=d<0?`${Math.abs(d)} gün önce`:d===0?'Bugün':`${d} gün sonra`;
+  const col=d===0?'var(--color-text-danger)':d<=2?'var(--color-text-warning)':'var(--color-text-info)';
+  const isOpen=openTaskId===h.id;
+  return `<div class="task-card${h.done?' tasks-done':''}" id="tc-${h.id}">
+    <div class="task-main" onclick="toggleDetail(${h.id})">
+      <div class="check${h.done?' done':''}" onclick="event.stopPropagation();toggleHDone(${h.id})">
+        ${h.done?`<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="var(--color-text-success)" stroke-width="2.5"><polyline points="2,5 4,8 8,3"/></svg>`:''}
+      </div>
+      <div class="task-body">
+        <div class="task-name">${h.name} <span class="durusma-badge">Duruşma</span></div>
+        <div class="task-meta">
+          ${h.client?`<span>👤 ${h.client}</span>`:''}
+          <span>📋 ${h.court}${h.esasno?' — '+h.esasno:''}</span>
+          <span>🕐 ${h.time||'—'} ${h.salon?'· '+h.salon:''}</span>
+          ${h.dtype?`<span>${h.dtype}</span>`:''}
+        </div>
+      </div>
+      <div class="task-right">
+        <span class="badge badge-amber">Duruşma</span>
+        <span class="deadline-txt" style="color:${col}">${lbl}</span>
+        <div class="deadline-bar" style="background:${col};width:60px"></div>
+      </div>
+    </div>
+    <div class="task-detail ${isOpen?'open':''}" id="td-${h.id}">
+      <div class="detail-grid">
+        <div class="detail-field"><label>Müvekkil</label><input value="${h.client||''}" onchange="updateHearing(${h.id},'client',this.value)"></div>
+        <div class="detail-field"><label>Mahkeme adı</label><input value="${h.court||''}" onchange="updateHearing(${h.id},'court',this.value)"></div>
+        <div class="detail-field"><label>Esas no</label><input value="${h.esasno||''}" onchange="updateHearing(${h.id},'esasno',this.value)"></div>
+        <div class="detail-field"><label>Tarih</label><input type="date" value="${h.date||''}" onchange="updateHearing(${h.id},'date',this.value)"></div>
+        <div class="detail-field"><label>Saat</label><input type="time" value="${h.time||''}" onchange="updateHearing(${h.id},'time',this.value)"></div>
+        <div class="detail-field"><label>Salon</label><input value="${h.salon||''}" onchange="updateHearing(${h.id},'salon',this.value)"></div>
+        <div class="detail-field"><label>Duruşma türü</label><input value="${h.dtype||''}" onchange="updateHearing(${h.id},'dtype',this.value)"></div>
+        <div class="detail-field"><label>Sonuç / Karar</label><input value="${h.result||''}" onchange="updateHearing(${h.id},'result',this.value)"></div>
+        <div class="detail-field" style="grid-column:1/-1"><label>Notlar / Hazırlık</label><textarea onchange="updateHearing(${h.id},'notes',this.value)">${h.notes||''}</textarea></div>
+      </div>
+      <div class="detail-actions">
+        <button class="btn-sm btn-cal" onclick="addHearingToCalendar(${h.id})">📅 Google Takvim'e ekle</button>
+        <button class="btn-sm" style="color:var(--color-text-danger)" onclick="deleteHearing(${h.id})">Sil</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function toggleDetail(id){
+  openTaskId=openTaskId===id?null:id;
+  render();
+}
+
+function toggleDone(id){
+  const t=data.tasks.find(x=>x.id===id);
+  if(t){t.done=!t.done;saveAndRender();}
+}
+function toggleHDone(id){
+  const h=data.hearings.find(x=>x.id===id);
+  if(h){h.done=!h.done;saveAndRender();}
+}
+function updateTask(id,field,val){
+  const t=data.tasks.find(x=>x.id===id);
+  if(t){t[field]=val;save(data);setSynced();}
+}
+function updateHearing(id,field,val){
+  const h=data.hearings.find(x=>x.id===id);
+  if(h){h[field]=val;save(data);setSynced();}
+}
+function deleteTask(id){
+  if(!confirm('Görevi silmek istediğinize emin misiniz?'))return;
+  data.tasks=data.tasks.filter(x=>x.id!==id);
+  openTaskId=null;saveAndRender();
+}
+function deleteHearing(id){
+  if(!confirm('Duruşmayı silmek istediğinize emin misiniz?'))return;
+  data.hearings=data.hearings.filter(x=>x.id!==id);
+  openTaskId=null;saveAndRender();
+}
+
+function addTask(){
+  const name=document.getElementById('n-name').value.trim();
+  const deadline=document.getElementById('n-deadline').value;
+  if(!name||!deadline){alert('Görev adı ve son tarih zorunludur.');return;}
+  data.tasks.push({
+    id:nextId++,name,
+    type:document.getElementById('n-type').value,
+    client:document.getElementById('n-client').value,
+    arrived:document.getElementById('n-arrived').value,
+    deadline,
+    time:document.getElementById('n-time').value,
+    court:document.getElementById('n-court').value,
+    dtype:document.getElementById('n-dtype').value,
+    notes:document.getElementById('n-notes').value,
+    result:'',done:false
+  });
+  ['n-name','n-client','n-arrived','n-deadline','n-time','n-court','n-dtype','n-notes'].forEach(id=>{document.getElementById(id).value='';});
+  saveAndRender();
+}
+
+function addDurusma(){
+  const name=document.getElementById('d-name').value.trim();
+  const court=document.getElementById('d-court').value.trim();
+  const date=document.getElementById('d-date').value;
+  if(!name||!court||!date){alert('Dava adı, mahkeme ve tarih zorunludur.');return;}
+  data.hearings.push({
+    id:nextId++,name,
+    client:document.getElementById('d-client').value,
+    court,
+    esasno:document.getElementById('d-esasno').value,
+    date,
+    time:document.getElementById('d-time').value,
+    salon:document.getElementById('d-salon').value,
+    dtype:document.getElementById('d-dtype').value,
+    notes:document.getElementById('d-notes').value,
+    result:'',done:false
+  });
+  ['d-name','d-client','d-court','d-esasno','d-date','d-time','d-salon','d-notes'].forEach(id=>{document.getElementById(id).value='';});
+  document.getElementById('d-dtype').value='';
+  saveAndRender();
+}
+
+function addToCalendar(id){
+  const t=data.tasks.find(x=>x.id===id);
+  if(!t)return;
+  const d=new Date(t.deadline);
+  const y=d.getFullYear();
+  const m=String(d.getMonth()+1).padStart(2,'0');
+  const day=String(d.getDate()).padStart(2,'0');
+  const dtStart=`${y}${m}${day}`;
+  const dtEnd=`${y}${m}${String(d.getDate()+1).padStart(2,'0')}`;
+  const title=encodeURIComponent(`[Avukat] ${t.name}${t.client?' — '+t.client:''}`);
+  const details=encodeURIComponent(`Tür: ${typeLabel(t.type)}\nMüvekkil: ${t.client||'—'}\n${t.notes||''}`);
+  const url=`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dtStart}/${dtEnd}&details=${details}`;
+  window.open(url,'_blank');
+}
+
+function addHearingToCalendar(id){
+  const h=data.hearings.find(x=>x.id===id);
+  if(!h)return;
+  const d=new Date(h.date);
+  const y=d.getFullYear();
+  const m=String(d.getMonth()+1).padStart(2,'0');
+  const day=String(d.getDate()).padStart(2,'0');
+  let dtStart,dtEnd;
+  if(h.time){
+    const [hh,mm]=h.time.split(':');
+    dtStart=`${y}${m}${day}T${hh}${mm}00`;
+    const end=new Date(d); end.setHours(parseInt(hh)+1,parseInt(mm));
+    dtEnd=`${y}${m}${day}T${String(end.getHours()).padStart(2,'0')}${String(end.getMinutes()).padStart(2,'0')}00`;
+  } else {
+    dtStart=`${y}${m}${day}`;
+    dtEnd=`${y}${m}${String(d.getDate()+1).padStart(2,'0')}`;
+  }
+  const title=encodeURIComponent(`[Duruşma] ${h.name}`);
+  const details=encodeURIComponent(`Mahkeme: ${h.court}\nEsas no: ${h.esasno||'—'}\nSalon: ${h.salon||'—'}\nTür: ${h.dtype||'—'}\n${h.notes||''}`);
+  const url=`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dtStart}/${dtEnd}&details=${details}`;
+  window.open(url,'_blank');
+}
+
+function setFilter(f,btn){
+  activeFilter=f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function setSynced(){
+  const el=document.getElementById('sync-status');
+  if(el){el.textContent='● Kaydedildi';}
+}
+
+function connectGoogle(){
+  alert('Google Drive bağlantısı için:\n\n1. Bu dosyayı bir web sunucusuna veya Google Apps Script\'e yükleyin\n2. OAuth 2.0 kimlik doğrulaması yapın\n3. Drive API ile otomatik senkronizasyon aktif olacak\n\nŞu an veriler tarayıcı belleğinde (localStorage) otomatik kaydediliyor.');
+}
+
+function renderWeek(){
+  const days=['Pzt','Sal','Çar','Per','Cum'];
+  const grid=document.getElementById('week-grid');
+  if(!grid)return;
+  grid.innerHTML='';
+  const slots=[[],[],[],[],[]];
+  data.tasks.filter(t=>!t.done).forEach(t=>{
+    const d=daysLeft(t.deadline);
+    let s=t.type==='tebligat'?Math.max(0,d-2):t.type==='mail'?Math.max(0,d-1):Math.max(0,d);
+    if(s>=0&&s<5)slots[s].push({...t,isH:false});
+  });
+  data.hearings.filter(h=>!h.done).forEach(h=>{
+    const d=daysLeft(h.date);
+    if(d>=0&&d<5)slots[d].push({...h,isH:true});
+  });
+  days.forEach((day,i)=>{
+    const col=document.createElement('div');
+    col.className='week-col';
+    const isToday=i===0;
+    col.innerHTML=`<h4>${day}${isToday?' · bugün':''}</h4>`;
+    if(!slots[i].length){
+      col.innerHTML+=`<div style="font-size:11px;color:var(--color-text-secondary);font-style:italic">Boş</div>`;
+    } else {
+      slots[i].forEach(t=>{
+        const cls=t.isH?'badge-amber':({tebligat:'badge-red',sozlesme:'badge-amber',mail:'badge-blue',gorusme:'badge-teal'}[t.type]||'');
+        const lbl=(t.name||'').length>22?(t.name||'').slice(0,22)+'…':(t.name||'');
+        col.innerHTML+=`<div class="week-slot ${cls}" style="font-size:11px">${lbl}${t.time?` <span style="opacity:.7">${t.time}</span>`:''}</div>`;
+      });
+    }
+    grid.appendChild(col);
+  });
+}
+
+function renderMonth(){
+  const title=document.getElementById('cal-title');
+  const grid=document.getElementById('month-grid');
+  if(!title||!grid)return;
+  const months=['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+  title.textContent=`${months[calMonth]} ${calYear}`;
+  grid.innerHTML='';
+  const first=new Date(calYear,calMonth,1);
+  let startDay=first.getDay()-1; if(startDay<0)startDay=6;
+  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  for(let i=0;i<startDay;i++){
+    const el=document.createElement('div');
+    el.className='month-day';
+    el.style.opacity='0.2';
+    grid.appendChild(el);
+  }
+  for(let day=1;day<=daysInMonth;day++){
+    const el=document.createElement('div');
+    const dateStr=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const isToday=dateStr===todayD.toISOString().split('T')[0];
+    el.className='month-day'+(isToday?' today':'');
+    el.innerHTML=`<div class="month-day-num">${day}</div>`;
+    const dayTasks=data.tasks.filter(t=>t.deadline===dateStr&&!t.done);
+    const dayH=data.hearings.filter(h=>h.date===dateStr&&!h.done);
+    dayTasks.forEach(t=>{
+      const cls={tebligat:'badge-red',sozlesme:'badge-amber',mail:'badge-blue',gorusme:'badge-teal'}[t.type]||'badge-gray';
+      el.innerHTML+=`<div class="month-event ${cls}" title="${t.name}">${t.name.length>12?t.name.slice(0,12)+'…':t.name}</div>`;
+    });
+    dayH.forEach(h=>{
+      el.innerHTML+=`<div class="month-event badge-amber" title="${h.name} — ${h.court}">⚖ ${h.name.length>10?h.name.slice(0,10)+'…':h.name}</div>`;
+    });
+    grid.appendChild(el);
+  }
+}
+
+function prevMonth(){calMonth--;if(calMonth<0){calMonth=11;calYear--;}renderMonth();}
+function nextMonth(){calMonth++;if(calMonth>11){calMonth=0;calYear++;}renderMonth();}
+
+function render(){
+  const active=data.tasks.filter(t=>!t.done);
+  const urgent=active.filter(isUrgent);
+  const todayH=data.hearings.filter(h=>daysLeft(h.date)===0&&!h.done);
+  const scheduled=active.filter(t=>!isUrgent(t)&&daysLeft(t.deadline)<=1);
+  const done=data.tasks.filter(t=>t.done);
+
+  const s_acil=document.getElementById('s-acil');
+  const s_bugun=document.getElementById('s-bugun');
+  const s_durusma=document.getElementById('s-durusma');
+  const s_tamam=document.getElementById('s-tamam');
+  const s_bekleyen=document.getElementById('s-bekleyen');
+  if(s_acil)s_acil.textContent=urgent.length;
+  if(s_bugun)s_bugun.textContent=active.filter(t=>daysLeft(t.deadline)===0).length;
+  if(s_durusma)s_durusma.textContent=data.hearings.filter(h=>!h.done&&daysLeft(h.date)===0).length;
+  if(s_tamam)s_tamam.textContent=done.length;
+  if(s_bekleyen)s_bekleyen.textContent=active.length;
+
+  const lu=document.getElementById('list-urgent');
+  const ldt=document.getElementById('list-durusma-today');
+  const ls=document.getElementById('list-scheduled');
+  if(lu)lu.innerHTML=urgent.length?urgent.map(t=>taskHTML(t)).join(''):`<div class="empty-msg">Bugün acil iş yok.</div>`;
+  if(ldt)ldt.innerHTML=todayH.length?todayH.map(h=>hearingHTML(h)).join(''):`<div class="empty-msg">Bugün duruşma yok.</div>`;
+  if(ls)ls.innerHTML=scheduled.length?scheduled.map(t=>taskHTML(t)).join(''):`<div class="empty-msg">Bugün için ek plan yok.</div>`;
+
+  const la=document.getElementById('list-all');
+  if(la){
+    let filtered=activeFilter==='hepsi'?[...data.tasks]:[...data.tasks].filter(t=>t.type===activeFilter);
+    const fActive=filtered.filter(t=>!t.done).sort((a,b)=>new Date(a.deadline)-new Date(b.deadline));
+    const fDone=filtered.filter(t=>t.done);
+    const allH=activeFilter==='hepsi'||activeFilter==='durusma'?data.hearings:[];
+    const hActive=allH.filter(h=>!h.done).sort((a,b)=>new Date(a.date)-new Date(b.date));
+    la.innerHTML=fActive.map(t=>taskHTML(t)).join('')+hActive.map(h=>hearingHTML(h)).join('')
+      +(fDone.length?`<div class="section-label" style="margin-top:14px;opacity:.6">Tamamlananlar</div>`+fDone.map(t=>taskHTML(t)).join(''):'');
+  }
+
+  const ld=document.getElementById('list-durusmalar');
+  if(ld){
+    const upcoming=data.hearings.filter(h=>!h.done).sort((a,b)=>new Date(a.date)-new Date(b.date));
+    const pastH=data.hearings.filter(h=>h.done);
+    ld.innerHTML=upcoming.length?upcoming.map(h=>hearingHTML(h)).join(''):`<div class="empty-msg">Planlanmış duruşma yok.</div>`;
+    if(pastH.length)ld.innerHTML+=`<div class="section-label" style="margin-top:14px;opacity:.6">Geçmiş duruşmalar</div>`+pastH.map(h=>hearingHTML(h)).join('');
+  }
+
+  renderWeek();
+  renderMonth();
+}
+
+function saveAndRender(){save(data);setSynced();render();}
+function showTab(name,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  const panel=document.getElementById('tab-'+name);
+  if(panel)panel.classList.add('active');
+  btn.classList.add('active');
+  if(name==='aylik')renderMonth();
+}
+
+render();
+</script>
